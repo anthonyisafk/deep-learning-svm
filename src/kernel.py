@@ -13,22 +13,17 @@ class Kernel:
 
     def __init__(self,
         f:str,
-        tau=None, d=None,  # polynomial
-        sigma=None,        # rbf
-        k=None, theta=None # tanh
+        tau=0, d=1,  # polynomial
+        sigma=1,        # rbf
+        k=1, theta=0 # tanh
     ):
         if f == "linear":
             self.f = linear()
         elif f == "poly":
-            tau = get_valid_value(tau, 0)
-            d = get_valid_value(d, 1)
             self.f = poly(tau, d)
         elif f == "rbf":
-            sigma = get_valid_value(sigma, 1)
             self.f = rbf(sigma)
         elif f == "tanh":
-            k = get_valid_value(k, 1)
-            theta = get_valid_value(theta, 0)
             self.f = tanh(k, theta)
         else:
             error = f"Unknown kernel function : {f}"
@@ -38,9 +33,6 @@ class Kernel:
     def __call__(self, x1:np.ndarray, x2:np.ndarray):
         return self.f(x1, x2)
 
-
-def get_valid_value(val, default):
-    return val if val is not None else default
 
 def linear():
     def impl(x1:np.ndarray, x2:np.ndarray):
