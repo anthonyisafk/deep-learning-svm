@@ -14,7 +14,7 @@ class Kernel:
     def __init__(self,
         f:str,
         tau=0, d=1,  # polynomial
-        sigma=1,        # rbf
+        sigma=1,     # rbf
         k=1, theta=0 # tanh
     ):
         if f == "linear":
@@ -33,6 +33,9 @@ class Kernel:
     def __call__(self, x1:np.ndarray, x2:np.ndarray):
         return self.f(x1, x2)
 
+
+def sign(x):
+    return -1 if x < 0 else 1
 
 def linear():
     def impl(x1:np.ndarray, x2:np.ndarray):
