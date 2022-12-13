@@ -24,8 +24,8 @@ def split_features_and_classes(
         for e in encode:
             df[e] = LabelEncoder().fit_transform(df[e])
     if drop is not None:
-        df = df.drop(columns=drop) # all 'oral' entries are true, so useless.
-    x = np.asarray(df.drop(columns=[class_col])) #TODO: Change to `class_col`
+        df = df.drop(columns=drop)
+    x = np.asarray(df.drop(columns=[class_col]))
     x = normalize(x)
     y = np.asarray(df[class_col])
     return df, x, y
