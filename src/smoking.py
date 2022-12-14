@@ -1,10 +1,8 @@
 import pandas as pd
 import numpy as np
 from libsvm.svmutil import *
-
 from svm_parser import *
-from utils import *
-
+from utils.preprocessing import *
 import time
 
 cv = 0.1
@@ -12,6 +10,7 @@ cv = 0.1
 def main():
     filename = "smoking/smoking.csv"
     df = pd.read_csv(filename, delimiter=',', header=0)
+    # print(df)
 
     # df = df.head(1000)
     df, x, y = split_features_and_classes(
