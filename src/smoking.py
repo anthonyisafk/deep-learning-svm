@@ -1,3 +1,15 @@
+"""
+Neural Networks & Deep Learning
+Aristotle University Thessaloniki - School of Informatics.
+******************************
+@brief: Building an SVM with libsvm.
+        Trained on the `Body Signal of Smoking` dataset.
+        (https://www.kaggle.com/datasets/kukuroo3/body-signal-of-smoking)
+@author: Antoniou, Antonios - 9482
+@email: aantonii@ece.auth.gr
+2022 AUTh Electrical and Computer Engineering.
+"""
+
 import pandas as pd
 import numpy as np
 from libsvm.svmutil import *
