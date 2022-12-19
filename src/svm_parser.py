@@ -12,7 +12,7 @@ def SVMParser(default_g):
     parser.add_argument('-c', help='cost', type=int, default=1)
     parser.add_argument('-w0', help="class 0 weight", type=float, default=1.0)
     parser.add_argument('-w1', help="class 1 weight", type=float, default=1.0)
-    parser.add_argument('-h', help='use of shrinking', type=int, default=1)
+    parser.add_argument('-h', help='use of shrinking', type=int, default=0)
     return parser
 
 
