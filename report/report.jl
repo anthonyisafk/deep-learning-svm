@@ -80,7 +80,7 @@ The problem above is derived, or is the **[dual problem](https://en.wikipedia.or
 \
 The $\alpha$ coefficients in (1) are non-zero for the indices that correspond to the support vectors of either class. 
 \
-However, the formula above makes the assumption that, even on a higher dimension, all vectors are **distinguishable**. So, we introduce the $C$ quantity, and its $w_{i}$ counterparts. These parameters are a way to tell the SVM **how much we care about it making a couple of errors** (the falsely classified elements could be noisy after all, this is not the model's fault, but a pre-processing matter). So, they are used to ensure that the margin of the resulting hyperplane (see image above), is still optimally large, even though the two classes aren't perfectly divided.
+However, the formula above makes the assumption that, even on a higher dimension, all vectors are **distinguishable**. So, we introduce the $C$ quantity, and its $w_{j}$ counterparts. These parameters are a way to tell the SVM **how much we care about it making a couple of errors** (the falsely classified elements could be noisy after all, this is not the model's fault, but a pre-processing matter). So, they are used to ensure that the margin of the resulting hyperplane (see image above), is still optimally large, even though the two classes aren't perfectly divided.
 \
 So the primal problem in (2) will be transformed into finding the minimum of:
 \
@@ -88,12 +88,55 @@ So the primal problem in (2) will be transformed into finding the minimum of:
 3. $\Phi(\underline{w}, \xi)=\frac{1}{2}\underline{w}^{T}\underline{w}+C\sum_{i=1}^{N}\xi_{i}$
 \
 \
-This is where $C$ comes into play. Regarding the $w_{i}$ parameters, they are weights that are added to the $\xi_{i}$ ones, for class $i$.
+This is where $C$ comes into play. Regarding the $w_{j}$ parameters, they are weights that are added to the $\xi_{i}$ ones, for class $j$.
 \
 After that overview, we now have an idea of all the variation we can provide to an SVM, in order to help the model reach a solution we deem trustworthy.
 
 ## Building an SVM with libsvm
-	
+
+The solution to the optimization problem that we researched above means **massive computation and memory workload**. Many methods have been suggested, implemented and used, such as **decomposition** of the solution matrix. Consequently, we will use **[libsvm](https://www.csie.ntu.edu.tw/~cjlin/libsvm/)** for creating a problem to be optimized and training the respective SVM.
+\
+\
+Suppose $n$ is the total number of datapoints in the training set, and $f$ is the number of useful features we will use after pre-processing. The library expects an array X of size $(n, f)$ and Y of size $(n, 1)$. With these two arrays we form an `svm_problem`. The second component of training with libsvm is the `svm_parameter` string, that dictates the values of the parameters in the libsvm manual.
+\
+\
+Regarding those parameters, an argument parser was built in such a way that both the parameter string would be conveniently given to the library and a selected set of values would be logged after every run, depending on the type of kernel utilized. This means that a call to the script will look like this:
+```bash
+.\src\svm.py -s 0 -t 1 -d 3 -r 0 -c 5000 -w0 1 -w1 2
+```
+And a logging entry of the run above would be:
+```csv
+s,t,d,g,r,c,h,time,acc
+0,1,3,0.04,0.0,5000,1,236.507,69.240
+```
+At this point, it's useful to point out that the parser (based on the [argparse](https://docs.python.org/3/library/argparse.html) python library) is set up with the same default values libsvm is, except for the `-h` shrinking parameter, that was set to 0. The reason for that was that, in the particular examples that the predictor was tested on, it resulted in both smaller training times and the exact same rates in accuracy.
+
+## Training tests conducted
+
+The larger part of the tests was done on the ["Body Signal of Smoking" dataset](https://www.kaggle.com/datasets/kukuroo3/body-signal-of-smoking). It was selected because of its natively binary nature (are there signs of smoking or not?), large number of samples (55692) and adequate number of features (26). The nummber of features was deliberately kept somewhat low, in order to keep the training time _relatively_ low. 
+
+### Preprocessing 
+
+Upon examining the dataset, we can observe three preprocessing tasks that need to take place:
+* Some columns of data are in string form, and they need to be encoded. Those are `gender` and `tartar`,
+* Some columns contain the same value on both classes. That happens to be `oral`.
+* The features that remained now need to have their values normalized, to make sure we don't artificially make one feature more important than the others.
+To serve that purpose, we introduce the **`split_features_and_classes`** function:
+```python
+def split_features_and_classes(
+    df,
+    class_col: str,
+    encode: List[str] = None,
+    drop: List[str] = None
+) -> tuple[pandas.DataFrame, numpy.ndarray, numpy.ndarray]
+```
+It takes the column that corresponds to the y targets, the list of columns that need to be encoded into numeric values (with `sklearn.preprocessing.LabelEncoder`), and the values that will be dropped from the DataFrame. Here, apart from `oral`, we also drop `ID`.
+\
+\
+Last, we need a function to get the whole X and Y arrays, and divide them into the training and testing set. Because we're dealing with support vectors, whose placements in the dataset is unknown, we only keep a little segment of the original data (more often 10%), so as not to disrupt class balance and minimize the probability of depriving the dataset of its support vectors. It is of great significance to note that there is a reason behind keeping some datapoints -even a few- for testing, with the risk of imbalance. We need to make sure that, after training, the model **wasn't overfitted**. The safest way to do that is by using vectors that had never been implanted into the dataset, up until the moment of testing. Think of the procedure as a very loosely put-together cross-validation.
+\
+\
+Now that the dataset is normalized, sanitized, and split into training and testing samples, we can move on to the experimenting phase. We will see the results of using different kernels, and different hyperparameters given to them, on a **C-SVC** 
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
