@@ -56,11 +56,11 @@ Despite the multitude of both `+` and `-` instances, the only ones that matter t
 ### What is the role of support vectors?
 
 During both training and predicting, a datapoint (or *vector*, as has already been addressed as) is essentially compared to every support vector. That comparison, is done, not in the **dimension** (and space in general) that is "native" to the data. SVM's apply **transformations** to the data, in an attempt to augment the probability of the dataset being **linearly discriminant**. This is done through a _**Kernel function**_, and this is where the variety of options in order to solve the same problem starts to set in. A few examples, for two vectors $x_{0}$ and $x_{1}$:
-* Linear: $K(x_{0},x_{1})=x_{0}^{T}\cdot x_{1}$
-* Polynomial: $K(x_{0},x_{1})=(\alpha x_{0}^{T}\cdot x_{1}+r)^{d}$
-* Gaussian:
-    * $K(x_{0},x_{1})=exp(-\frac{||x_{0}-x_{1}||^{2}}{2\sigma^{2}}), or$
-    * $K(x_{0},x_{1})=exp(-\gamma||x_{0}-x_{1}||^{2})$
+1. Linear: $K(x_{0},x_{1})=x_{0}^{T}\cdot x_{1}$
+2. Polynomial: $K(x_{0},x_{1})=(\alpha x_{0}^{T}\cdot x_{1}+r)^{d}$
+3. Gaussian:
+    * a. $K(x_{0},x_{1})=exp(-\frac{||x_{0}-x_{1}||^{2}}{2\sigma^{2}}), or$
+    * b. $K(x_{0},x_{1})=exp(-\gamma||x_{0}-x_{1}||^{2})$
 
 Needless to say, some libraries make a few more assumptions about the values of some coefficients. For example, *libsvm* supposes that $2\sigma^{2}=\#features$, $\gamma=\frac{1}{\#features}$. So, depending on the framework one uses to train a model, there is more or less flexibility depending on the type of SVM and kernel they want to use.
 
@@ -69,23 +69,23 @@ Needless to say, some libraries make a few more assumptions about the values of 
 The training of an SVM is translated into the solution of a **quadratic programming problem**:
 \
 \
-1. $Q(a)=\sum_{i=1}^{N}\alpha_{i}-\frac{1}{2}\sum_{i=1}^{N}\sum_{j=1}^{N}\alpha_{i}\alpha_{j}d_{i}d_{j}x_{i}^{T}x_{j}$
+4. $Q(a)=\sum_{i=1}^{N}\alpha_{i}-\frac{1}{2}\sum_{i=1}^{N}\sum_{j=1}^{N}\alpha_{i}\alpha_{j}d_{i}d_{j}x_{i}^{T}x_{j}$
 \
 \
 The problem above is derived, or is the **[dual problem](https://en.wikipedia.org/wiki/Duality_(optimization))**, of a **primal** one. Briefly explained, the dual problem is a transformation of an optimization problem, that yields the same results, by optimizing a different set of variables:
 \
 \
-2. $J(\underline{w},b,\alpha)=\frac{1}{2}\underline{w}^{T}\underline{w}-\sum_{i=1}^{N}\alpha_{i}[d_{i}(\underline{w}^{T}x_{i}+b)-1]$
+5. $J(\underline{w},b,\alpha)=\frac{1}{2}\underline{w}^{T}\underline{w}-\sum_{i=1}^{N}\alpha_{i}[d_{i}(\underline{w}^{T}x_{i}+b)-1]$
 \
 \
-The $\alpha$ coefficients in (1) are non-zero for the indices that correspond to the support vectors of either class. 
+The $\alpha$ coefficients in (4) are non-zero for the indices that correspond to the support vectors of either class. 
 \
 However, the formula above makes the assumption that, even on a higher dimension, all vectors are **distinguishable**. So, we introduce the $C$ quantity, and its $w_{j}$ counterparts. These parameters are a way to tell the SVM **how much we care about it making a couple of errors** (the falsely classified elements could be noisy after all, this is not the model's fault, but a pre-processing matter). So, they are used to ensure that the margin of the resulting hyperplane (see image above), is still optimally large, even though the two classes aren't perfectly divided.
 \
-So the primal problem in (2) will be transformed into finding the minimum of:
+So the primal problem in (5) will be transformed into finding the minimum of:
 \
 \
-3. $\Phi(\underline{w}, \xi)=\frac{1}{2}\underline{w}^{T}\underline{w}+C\sum_{i=1}^{N}\xi_{i}$
+6. $\Phi(\underline{w}, \xi)=\frac{1}{2}\underline{w}^{T}\underline{w}+C\sum_{i=1}^{N}\xi_{i}$
 \
 \
 This is where $C$ comes into play. Regarding the $w_{j}$ parameters, they are weights that are added to the $\xi_{i}$ ones, for class $j$.
@@ -109,7 +109,7 @@ And a logging entry of the run above would be:
 s,t,d,g,r,c,h,time,acc
 0,1,3,0.04,0.0,5000,1,236.507,69.240
 ```
-At this point, it's useful to point out that the parser (based on the [argparse](https://docs.python.org/3/library/argparse.html) python library) is set up with the same default values libsvm is, except for the `-h` shrinking parameter, that was set to 0. The reason for that was that, in the particular examples that the predictor was tested on, it resulted in both smaller training times and the exact same rates in accuracy.
+At this point, it's useful to point out that the parser (based on the [argparse](https://docs.python.org/3/library/argparse.html) python library) is set up with the same default values libsvm is, except for the `-h` shrinking parameter, that was set to 0. **The reason for that was that, in the particular examples that the predictor was tested on, it resulted in both smaller training times and the exact same rates in accuracy.**
 
 ## Training tests conducted
 
@@ -136,7 +136,12 @@ It takes the column that corresponds to the y targets, the list of columns that 
 Last, we need a function to get the whole X and Y arrays, and divide them into the training and testing set. Because we're dealing with support vectors, whose placements in the dataset is unknown, we only keep a little segment of the original data (more often 10%), so as not to disrupt class balance and minimize the probability of depriving the dataset of its support vectors. It is of great significance to note that there is a reason behind keeping some datapoints -even a few- for testing, with the risk of imbalance. We need to make sure that, after training, the model **wasn't overfitted**. The safest way to do that is by using vectors that had never been implanted into the dataset, up until the moment of testing. Think of the procedure as a very loosely put-together cross-validation.
 \
 \
-Now that the dataset is normalized, sanitized, and split into training and testing samples, we can move on to the experimenting phase. We will see the results of using different kernels, and different hyperparameters given to them, on a **C-SVC** 
+Now that the dataset is normalized, sanitized, and split into training and testing samples, we can move on to the experimenting phase. We will see the results of using different kernels, and different hyperparameters given to them, on a **C-SVC**. For the mathematical notation of each of the kernels that will be examined, you can another look at (1), (2) and (3).
+
+### Linear kernel
+
+Here, we have room to experiment with the error weight parameters, $C$, $w_{0}$ and $w_{1}$. The majority of the samples correspond to non-smokers, so an initial thought would suggest that different $w_{0}$ and $w_{1}$ values could affect the resulting accuracy for the better. 
+
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
