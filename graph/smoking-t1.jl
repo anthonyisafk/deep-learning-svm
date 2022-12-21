@@ -1,3 +1,8 @@
+# Graphs for `-t 1` (Polynomial kernel).
+# For every degree `d` in [2,7], output an image with 3 subplots.
+# One subplot for each value of `r` in `r_values`.
+# The x-axis is the range of the values of `C`.
+
 using DataFrames, CSV
 using Plots
 

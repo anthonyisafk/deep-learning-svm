@@ -1,3 +1,8 @@
+# Graphs for `-t 0` (Linear kernel).
+# w0 and w1 parameters range in `w_values`.
+# For every separate value of w0, output a graph with the
+# the accuracy for all the {w0=constant , w1} pairs.
+
 using DataFrames, CSV
 using Plots
 

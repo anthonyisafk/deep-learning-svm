@@ -1,3 +1,9 @@
+# Graphs for `-t 2` (RBF kernel).
+# The `g` parameter ranges in `g_values`.
+# The w0 and w1 parameters range in `w_values`.
+# For every constant value of `g`, output 5 subplots:
+# One for each constant value of `w0`, in relation to `w1`.
+
 using DataFrames, CSV
 using Plots
 

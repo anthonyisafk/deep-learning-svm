@@ -1,3 +1,8 @@
+# Graphs for `-t 3` (Sigmoid kernel).
+# The `r` parameter ranges in `r_values`.
+# For every constant value of `r`, output a plot.
+# x-axis is the values of `C` (ranging in `c_values`).
+
 using DataFrames, CSV
 using Plots
 
