@@ -110,6 +110,20 @@ s,t,d,g,r,c,h,time,acc
 0,1,3,0.04,0.0,5000,1,236.507,69.240
 ```
 At this point, it's useful to point out that the parser (based on the [argparse](https://docs.python.org/3/library/argparse.html) python library) is set up with the same default values libsvm is, except for the `-h` shrinking parameter, that was set to 0. **The reason for that was that, in the particular examples that the predictor was tested on, it resulted in both smaller training times and the exact same rates in accuracy.**
+\
+\
+\
+\
+\
+\
+**Note**: You can see the results of experimenting with shrinking in [this log of results](https://github.com/anthonyisafk/deep-learning-svm/blob/main/logs/smoking-t1-large_c.csv):
+
+| s | t | g    | r   | c   | h | time    | acc    |
+|---|---|------|-----|-----|---|---------|--------|
+| 0 | 1 | 0.04 | 0.1 | 10  | 0 | 161.168 | 69.428 |
+| 0 | 1 | 0.04 | 0.1 | 10  | 1 | 186.201 | 69.432 |
+| 0 | 1 | 0.04 | 0.1 | 100 | 0 | 153.604 | 71.113 |
+| 0 | 1 | 0.04 | 0.1 | 100 | 1 | 176.692 | 71.109 |
 
 ## Training tests conducted
 
@@ -136,12 +150,131 @@ It takes the column that corresponds to the y targets, the list of columns that 
 Last, we need a function to get the whole X and Y arrays, and divide them into the training and testing set. Because we're dealing with support vectors, whose placements in the dataset is unknown, we only keep a little segment of the original data (more often 10%), so as not to disrupt class balance and minimize the probability of depriving the dataset of its support vectors. It is of great significance to note that there is a reason behind keeping some datapoints -even a few- for testing, with the risk of imbalance. We need to make sure that, after training, the model **wasn't overfitted**. The safest way to do that is by using vectors that had never been implanted into the dataset, up until the moment of testing. Think of the procedure as a very loosely put-together cross-validation.
 \
 \
-Now that the dataset is normalized, sanitized, and split into training and testing samples, we can move on to the experimenting phase. We will see the results of using different kernels, and different hyperparameters given to them, on a **C-SVC**. For the mathematical notation of each of the kernels that will be examined, you can another look at (1), (2) and (3).
+Now that the dataset is normalized, sanitized, and split into training and testing samples, we can move on to the experimenting phase. We will see the results of using different kernels, and different hyperparameters given to them, on a **C-SVC**. For the mathematical notation of each of the kernels that will be examined, you can take another look at (1), (2) and (3).
+
+**Below are only _some_ of the results visualized, enough to back the statements to be made regarding training the dataset with the selected kernels.** All the graphs can be found [in this folder](https://github.com/anthonyisafk/deep-learning-svm/tree/main/image) of the repository.
 
 ### Linear kernel
 
-Here, we have room to experiment with the error weight parameters, $C$, $w_{0}$ and $w_{1}$. The majority of the samples correspond to non-smokers, so an initial thought would suggest that different $w_{0}$ and $w_{1}$ values could affect the resulting accuracy for the better. 
+Here, we have room to experiment with the error weight parameters, $C$, $w_{0}$ and $w_{1}$. The majority of the samples correspond to non-smokers, so an initial thought would suggest that different $w_{0}$ and $w_{1}$ values could affect the resulting accuracy for the better.
 
+$(LocalResource(
+	"../image/smoking-t0/smoking-t0-w0_5.0.png",
+	:style => "text-align: left;
+               width: 45%;"
+))
+$(LocalResource(
+	"../image/smoking-t0/smoking-t0-w0_10.0.png",
+	:style => "text-align: right;
+               width: 45%;"
+))
+"""
+
+# ╔═╡ 6d46f39d-160b-4774-a2ea-ffd0a902567e
+md"""
+It's pretty clear to see that the accuracy of the model is about 10% greater for the same parameters but $w_{1}\geq w_{0}$. This means that we penalize errors on class-0 (non-smokers) less in relation to the significance of making an error on class-1, whose population is half as dense.
+"""
+
+# ╔═╡ 07993512-37e2-4a1d-a0c3-8808238e0268
+md"""
+### Polynomial kernel
+
+For the polynomial tests, we test different offsets $r=\{-0.1, 0.0, 0.1\}$, for degrees $d=[2,7]$. The tests show that increasing the degree -for the specific dataset- only worsens accuracy:
+
+$(LocalResource(
+	"../image/smoking-t1/smoking-t1-d2.png",
+	:style => "text-align: left;
+               width: 45%;"
+))
+$(LocalResource(
+	"../image/smoking-t1/smoking-t1-d7.png",
+	:style => "text-align: right;
+               width: 45%;"
+))
+"""
+
+# ╔═╡ 6584323f-3b37-4074-991a-22ef6c854c34
+md"""
+Since for $d=2$ and $r=0.1$ we can observe an upwards tendency in accuracy, we test for greater values of C:
+
+$(LocalResource(
+	"../image/smoking-t1-largec/smoking-t1-largec-r(0.1).png",
+	:style => "text-align: center;
+               width: 55%;
+               display: block;
+               margin-left: auto;
+               margin-right: auto;"
+))
+"""
+
+# ╔═╡ ad06221e-cb5c-4611-8815-2970efbd36a1
+md"""
+Now, we are happy with these results, but take them with a pinch of salt. Values of $C$, that are as great as the ones above conceal a really high risk of overfitting, by forming a tight space that classifies one of the classes, and essentially considers anythin outside that tight space to be the other class. However, in any way, augmenting $C$ stops having such an impact. It looks like the plateau is 75% accuracy for a polynomial kernel of degree $d=2$
+"""
+
+# ╔═╡ 4858d573-d431-4e19-88f7-ce93dcd23ebe
+md"""
+### RBF kernel
+
+Values of $\gamma$ in $[0.01, 0.05]$ with a step of $0.01$ were used, together with pairs of $w_{0},w_{1}$ in a grid of values $w=\{1.0,2.0,5.0,10.0,20.0\}$. All values of $\gamma$ yielded the same results. Let's take $\gamma=0.04$ for example, since it is the default value for the dataset:
+
+$(LocalResource(
+	"../image/smoking-t2/smoking-t2-g0.04.png",
+	:style => "text-align: center;
+               width: 55%;
+               display: block;
+               margin-left: auto;
+               margin-right: auto;"
+))
+"""
+
+# ╔═╡ d093c654-1a1e-4092-9b98-ab52a9061213
+md"""
+This time, the relation between the weight parameters is different. Accuracy takes its maximum value, when $w_{0}=w{1}$. With this information, we conduct tests for $\gamma=0.04$, default values $w_{0}=w_{1}=1.0$, and large values of C:
+
+$(LocalResource(
+	"../image/smoking-t2/smoking-t2-largec.png",
+	:style => "text-align: center;
+               width: 55%;
+               display: block;
+               margin-left: auto;
+               margin-right: auto;"
+))
+"""
+
+# ╔═╡ 8450dd50-fc05-4bb8-b199-86bf2ac35b59
+md"""
+Now, $C=10000$ gives an accuracy of $76.154\%$, which is the best we have managed to achieve.
+
+### Sigmoid kernel 
+
+For experiments on the sigmoid kernel, we use the same $w_{0},w_{1}$ pairs as the ones for the RBF kernel. We test them for $r=[-0.2,0.2]$, with step equal to $0.1$. Once again, the results are comparable, if not identical. For example:
+
+$(LocalResource(
+	"../image/smoking-t3/smoking-t3-r0.1.png",
+	:style => "text-align: center;
+               width: 55%;
+               display: block;
+               margin-left: auto;
+               margin-right: auto;"
+))
+"""
+
+# ╔═╡ 272523d8-4c17-43b5-9777-44e1ecb9fa45
+md"""
+### Nearest Centroid and KNN Classifiers
+
+The code for the classifiers can be found [in the clustering directory](https://github.com/anthonyisafk/deep-learning-svm/tree/main/src/clustering) of the source code.
+
+Using the same pre-processing techniques, and the same fraction of data for validating the results of the training ($10\%$), we train 3 classifiers:
+
+| Classifier          | Training time[s.] | Accuracy[%] |
+|---------------------|-------------------|-------------|
+| NearestCentroid     | 0.015             | 65.505      |
+| 1-NearestNeighbor   | 0.01              | 77.375      |
+| 3-NearestNeighbrors | 0.0049            | 69.977      |
+
+The KNN classifier takes a minuscule fraction of the time that we need for an SVM to train on the dataset, with the resulting accuracy being comparable, or even better than all tests above.
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -371,6 +504,14 @@ uuid = "3f19e933-33d8-53b3-aaab-bd5110c3b7a0"
 # ╟─ed431250-0869-430e-a724-8549804f05a7
 # ╟─94869478-5a9b-44e0-8818-97f6e11a8cbb
 # ╟─4ed05c08-47ea-4fcb-8f3a-c62518fb3858
-# ╠═2147348f-261e-42ef-a5b8-db03476c5b5b
+# ╟─2147348f-261e-42ef-a5b8-db03476c5b5b
+# ╟─6d46f39d-160b-4774-a2ea-ffd0a902567e
+# ╟─07993512-37e2-4a1d-a0c3-8808238e0268
+# ╟─6584323f-3b37-4074-991a-22ef6c854c34
+# ╟─ad06221e-cb5c-4611-8815-2970efbd36a1
+# ╟─4858d573-d431-4e19-88f7-ce93dcd23ebe
+# ╟─d093c654-1a1e-4092-9b98-ab52a9061213
+# ╟─8450dd50-fc05-4bb8-b199-86bf2ac35b59
+# ╟─272523d8-4c17-43b5-9777-44e1ecb9fa45
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
