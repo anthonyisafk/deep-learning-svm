@@ -46,7 +46,7 @@ def main():
     print(f"\n\n  >> params : {param_str}\n  >> training time : {stop_time} sec.")
     log_info = get_params_csv(args)
     log_info += f",{stop_time:.3f},{acc[0]:2.3f}"
-    log_results(f"logs/smoking-t{args.t}.log", log_info)
+    log_results(f"logs/smoking-t{args.t}.csv", log_info)
 
 if __name__ == '__main__':
     main()

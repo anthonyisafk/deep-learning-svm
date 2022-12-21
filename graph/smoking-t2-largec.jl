@@ -3,7 +3,7 @@ using Plots
 
 skipped = 6;
 
-filename = "logs/smoking-t2.log";
+filename = "logs/smoking-t2.csv";
 df = DataFrame(CSV.File(filename, header=1));
 nrows, ncols = size(df);
 df = last(df, skipped);

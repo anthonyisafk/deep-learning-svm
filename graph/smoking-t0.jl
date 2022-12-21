@@ -6,7 +6,7 @@
 using DataFrames, CSV
 using Plots
 
-filename = "logs/smoking-t0.log";
+filename = "logs/smoking-t0.csv";
 df = DataFrame(CSV.File(filename, header=1));
 nrows, ncols = size(df);
 

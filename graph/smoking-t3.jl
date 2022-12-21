@@ -8,7 +8,7 @@ using Plots
 
 skip = 1; # drop last `skip` rows
 
-filename = "logs/smoking-t3.log";
+filename = "logs/smoking-t3.csv";
 df = DataFrame(CSV.File(filename, header=1));
 nrows, ncols = size(df);
 df = first(df, nrows - skip);
