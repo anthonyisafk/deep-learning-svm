@@ -127,7 +127,7 @@ At this point, it's useful to point out that the parser (based on the [argparse]
 
 ## Training tests conducted
 
-The larger part of the tests was done on the ["Body Signal of Smoking" dataset](https://www.kaggle.com/datasets/kukuroo3/body-signal-of-smoking). It was selected because of its natively binary nature (are there signs of smoking or not?), large number of samples (55692) and adequate number of features (26). The nummber of features was deliberately kept somewhat low, in order to keep the training time _relatively_ low. 
+The larger part of the tests was done on the ["Body Signal of Smoking" dataset](https://www.kaggle.com/datasets/kukuroo3/body-signal-of-smoking). It was selected because of its natively binary nature (are there signs of smoking or not?), large number of samples (55692) and adequate number of features (26). The number of features was deliberately kept somewhat low, in order to keep the training time _relatively_ low. 
 
 ### Preprocessing 
 
